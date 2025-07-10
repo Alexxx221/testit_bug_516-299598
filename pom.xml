@@ -12,35 +12,22 @@
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <aspectj.version>1.9.22</aspectj.version>
-    <adapter.version>2.4.3</adapter.version>
+    <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+    <aspectj-maven-plugin.version>1.14.0</aspectj-maven-plugin.version>
+    <testit-junit5-adapter.version>2.4.3</testit-junit5-adapter.version>
+    <aspectj.version>1.9.22.1</aspectj.version>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>5.7.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.platform</groupId>
-      <artifactId>junit-platform-launcher</artifactId>
-      <version>1.9.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.7.0</version>
-    </dependency>
-    <dependency>
       <groupId>ru.testit</groupId>
       <artifactId>testit-java-commons</artifactId>
-      <version>${adapter.version}</version>
+      <version>${testit-junit5-adapter.version}</version>
     </dependency>
     <dependency>
       <groupId>ru.testit</groupId>
       <artifactId>testit-adapter-junit5</artifactId>
-      <version>${adapter.version}</version>
+      <version>${testit-junit5-adapter.version}</version>
     </dependency>
     <dependency>
       <groupId>org.aspectj</groupId>
@@ -59,17 +46,37 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>dev.aspectj</groupId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+        <configuration>
+          <argLine>
+            -Dfile.encoding=${project.build.sourceEncoding}
+            -Djunit.jupiter.extensions.autodetection.enabled=true
+            -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
+            <!--disable warnings-->
+            -XX:+EnableDynamicAgentLoading -Xshare:off
+          </argLine>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>${aspectj.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
         <artifactId>aspectj-maven-plugin</artifactId>
-        <version>1.14</version>
+        <version>${aspectj-maven-plugin.version}</version>
         <configuration>
           <complianceLevel>${maven.compiler.source}</complianceLevel>
           <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.source}</target>
-          <!--Allows the adapter to accept real parameter names-->
-          <compilerArgs>
+          <target>${maven.compiler.target}</target>
+          <additionalCompilerArgs>
             <arg>-parameters</arg>
-          </compilerArgs>
+          </additionalCompilerArgs>
         </configuration>
         <executions>
           <execution>
@@ -87,20 +94,6 @@
             <version>${aspectj.version}</version>
           </dependency>
         </dependencies>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.2.5</version>
-        <configuration>
-          <argLine>-noverify</argLine>
-          <argLine>-javaagent:${user.home}/.m2/repository/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar</argLine>
-          <properties>
-            <configurationParameters>
-              junit.jupiter.extensions.autodetection.enabled = true
-            </configurationParameters>
-          </properties>
-        </configuration>
       </plugin>
     </plugins>
   </build>
